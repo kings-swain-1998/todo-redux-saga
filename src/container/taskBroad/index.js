@@ -1,11 +1,13 @@
 import React, { Component } from 'react';
+import {connect} from 'react-redux';
 import '../../styles/css/index.css';
 import { Button } from '@material-ui/core';
 import AddIcon from '@material-ui/icons/Add';
-import axios from 'axios';
 import { STATUS } from '../../constants/index';
 import TaskList from '../../component/taskList';
 import TaskForm from '../../component/taskForm';
+import { bindActionCreators } from 'redux';
+import * as fetchTask from '../../actions/index';
 
 
 
@@ -19,16 +21,13 @@ class taskBroad extends Component {
         }
     }
     componentDidMount() {
-        axios.get("http://localhost:3000/task")
-            .then(res => {
-                this.setState({
-                    tasks: res.data
-                })
-            })
+        const { fetchTask } = this.props;
+        const fetchTaskRq = fetchTask.fetchTaskRq;
+        fetchTaskRq()
     }
 
     renderTask = () => {
-        const { tasks } = this.state;
+        const { tasks } = this.props;
         return STATUS.map((status, i) => {
             const taskFilter = tasks.filter(task => { return task.status === status.value });
             return <TaskList tasks={taskFilter} status={status} key={i}></TaskList>
@@ -47,7 +46,6 @@ class taskBroad extends Component {
 
 
     render() {
-
         return (
             <div className="todo-task" >
                 <Button variant="contained" color="primary" onClick={this.handleClose}>
@@ -63,4 +61,15 @@ class taskBroad extends Component {
     };
 }
 
-export default taskBroad;
+const mapStateToProps = state => {
+    return {
+        tasks : state.tasks.tasks
+    }
+};
+const mapDispatchToProps = (dispatch) => {
+    return {
+        fetchTask : bindActionCreators(fetchTask, dispatch)
+    }
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(taskBroad);
